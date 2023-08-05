@@ -6,6 +6,7 @@
 #include <fcntl.h>  // for open
 #include <unistd.h> // for close
 #include <errno.h>
+#include <arpa/inet.h>
 
 int main()
 {
@@ -61,6 +62,8 @@ int main()
             printf("%d\n", errno);
             break;
         }
+
+        printf("accepted connection from %s, port=%d\n", inet_ntoa(client.sin_addr), ntohs(client.sin_port));
 
         // 5文字送信
         if (write(sock, "HELLO", 5) == -1)
