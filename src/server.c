@@ -27,10 +27,10 @@ int main()
     }
 
     // socketの設定
-    addr.sin_family = AF_INET;
     // ポート番号
-    addr.sin_port = htons(12345);
     // どのアドレスからの接続も受け入れるように待ち受ける
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(12345);
     addr.sin_addr.s_addr = INADDR_ANY;
 
     // bindする
@@ -50,22 +50,25 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    // TCPクライアントからの接続要求を受け付ける
-    len = sizeof(client);
-    sock = accept(sock0, (struct sockaddr *)&client, &len);
-    if (sock < 0)
+    while (1)
     {
-        perror("accept");
-        printf("%d\n", errno);
-        close(sock0);
-        exit(EXIT_FAILURE);
+        // TCPクライアントからの接続要求を受け付ける
+        len = sizeof(client);
+        sock = accept(sock0, (struct sockaddr *)&client, &len);
+        if (sock < 0)
+        {
+            perror("accept");
+            printf("%d\n", errno);
+            close(sock0);
+            exit(EXIT_FAILURE);
+        }
+
+        // 5文字送信
+        write(sock, "HELLO", 5);
+
+        // TCPセッションの終了
+        close(sock);
     }
-
-    // 5文字送信
-    write(sock, "HELLO", 5);
-
-    // TCPセッションの終了
-    close(sock);
 
     // listenするソケットの終了
     close(sock0);
