@@ -59,12 +59,15 @@ int main()
         {
             perror("accept");
             printf("%d\n", errno);
-            close(sock0);
-            exit(EXIT_FAILURE);
+            break;
         }
 
         // 5文字送信
-        write(sock, "HELLO", 5);
+        if (write(sock, "HELLO", 5) == -1)
+        {
+            perror("write");
+            break;
+        }
 
         // TCPセッションの終了
         close(sock);
