@@ -7,6 +7,7 @@
 #include <unistd.h> // for close
 #include <errno.h>
 #include <arpa/inet.h>
+#include <string.h>
 
 int main()
 {
@@ -51,6 +52,17 @@ int main()
         exit(EXIT_FAILURE);
     }
 
+    char buf[2048];
+    char inbuf[2048];
+
+    memset(buf, 0, sizeof(buf));
+    snprintf(buf, sizeof(buf),
+             "HTTP/1.0 200 OK\r\n"
+             "Content-Length: 20\r\n"
+             "Content-Type: text/html\r\n"
+             "\r\n"
+             "HELLO WORLD");
+
     while (1)
     {
         // TCPクライアントからの接続要求を受け付ける
@@ -64,12 +76,11 @@ int main()
 
         printf("accepted connection from %s, port=%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 
-        // 5文字送信
-        if (write(client_socket, "HELLO", 5) == -1)
-        {
-            perror("write");
-            break;
-        }
+        memset(inbuf, 0, sizeof(inbuf));
+        recv(client_socket, inbuf, sizeof(inbuf), 0);
+        printf("%s", inbuf);
+
+        send(client_socket, buf, (int)strlen(buf), 0);
 
         // TCPセッションの終了
         close(client_socket);
