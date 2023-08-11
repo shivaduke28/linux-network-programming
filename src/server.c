@@ -52,11 +52,11 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    char buf[2048];
-    char inbuf[2048];
+    char request_buffer[2048];
+    char response_buffer[2048];
 
-    memset(buf, 0, sizeof(buf));
-    snprintf(buf, sizeof(buf),
+    memset(response_buffer, 0, sizeof(response_buffer));
+    snprintf(response_buffer, sizeof(response_buffer),
              "HTTP/1.0 200 OK\r\n"
              "Content-Length: 20\r\n"
              "Content-Type: text/html\r\n"
@@ -76,11 +76,30 @@ int main()
 
         printf("accepted connection from %s, port=%d\n", inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));
 
-        memset(inbuf, 0, sizeof(inbuf));
-        recv(client_socket, inbuf, sizeof(inbuf), 0);
-        printf("%s", inbuf);
+        memset(request_buffer, 0, sizeof(request_buffer));
+        ssize_t bytes_read = recv(client_socket, request_buffer, sizeof(request_buffer), 0);
+        if (bytes_read <= 0)
+        {
+            perror("Receiving data failed.");
+            close(client_socket);
+            continue;
+        }
 
-        send(client_socket, buf, (int)strlen(buf), 0);
+        printf("%s", request_buffer);
+
+        // Null-terminate the receiving data
+        request_buffer[bytes_read] = '\0';
+
+        // Parse the HTTP request
+        char *method = strtok(request_buffer, " ");
+        char *url = strtok(NULL, " ");
+        char *version = strtok(NULL, "\r\n");
+
+        printf("Method: %s\n", method);
+        printf("URL: %s\n", url);
+        printf("Version: %s\n", version);
+
+        send(client_socket, response_buffer, (int)strlen(response_buffer), 0);
 
         // TCPセッションの終了
         close(client_socket);
